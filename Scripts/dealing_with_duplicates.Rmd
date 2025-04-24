@@ -1,0 +1,142 @@
+---
+title: "Dealing with Duplicates Workshop"
+date: 2025-04-25
+---
+
+# Step 0: Load libraries
+
+```{r include = FALSE}
+library(tidyverse)
+library(janitor)
+library(assertr)
+```
+
+
+# Read in (fake) student data
+
+```{r}
+students <- read_rds("../Input/student_data.rds") 
+```
+
+
+Example: 
+
+```{r}
+students %>% get_dupes(student_id)
+```
+
+
+## How can you get_dupes with dplyr verbs?
+
+Use the students dataset to get the dupes by student_id, without using `get_dupes()`
+
+```{r}
+
+```
+
+
+# Correcting duplicates
+
+## Method 1
+
+Correct the dupes individually with if_else or case_when and then distinct to remove the straight dupes
+
+```{r}
+students_clean <- students %>% 
+  mutate(grade = if_else(student_id == ..., ..., grade)) %>%
+  distinct()
+
+students_clean
+```
+
+
+## Method 2
+
+Systematically remove dupes by taking the min or max of the duplicate
+causing column
+
+```{r}
+students_clean <- students %>%
+  group_by(student_id) %>% 
+  summarize(grade = min(grade)) %>%
+  ungroup()
+
+students_clean
+```
+
+
+## Method 3
+
+Flag the dupes individually with if_else or case_when, filter to them, and 
+then anti_join them on.
+
+```{r}
+dupes_remove <- students %>% 
+  mutate(remove = if_else(student_id == 6775709 & grade == 6, 1, 0)) %>%
+  filter(remove == 1)
+
+# anti_join the dupes on
+students_clean <- anti_join(students, dupes_remove)
+```
+
+
+## Method 4
+
+Output the duplicates, manually choose which version to remove,
+and then anti_join those on
+
+```{r}
+# Write out the dupes
+get_dupes(students, student_id) %>%
+  write_csv(., "../QC/student_id_dupes.csv", na = "")
+
+# Open the file in Excel, add a column called remove with a 0 or flag
+# to indicate whether or not you should remove it from the dataset
+# Then save it as student_id_dupes_corrected.csv in the Input folder
+
+# Read in the annotated file
+# Filter to the row(s) you want to remove
+dupes_remove <- read_csv("../Input/student_id_dupes_corrected.csv") %>% 
+  filter(remove == 1) %>%
+  # Fix columns that don't match the rds after reading it in as a csv
+  mutate(student_id = as.character(student_id),
+         across(contains("date"), mdy))
+
+# anti_join the dupes on
+students_clean  <- anti_join(students, dupes_remove)
+```
+
+
+# YOU DO! 
+
+```{r}
+practice_exam <- read_csv("../Input/practice_exam.csv")
+
+practice_exam
+```
+
+## Find duplicates in the Practice Exam data
+
+* Take a look at the data.  What do you think the data is/should be unique by?
+* Are there dupes? How many? What are they by?
+* What business rule do you think you should apply to correct these duplicates?
+
+```{r}
+practice_exam %>% 
+  get_dupes(student_number, subject)
+```
+
+
+## Correcting duplicates in the Practice SAT data
+
+Correct the duplicates in the Practice SAT data by only keeping the rows where
+the exam grade matches the student’s grade level.
+Check that there are no dupes in your corrected data.
+
+Name your tibble of dupes dupes_remove
+
+```{r}
+
+```
+
+

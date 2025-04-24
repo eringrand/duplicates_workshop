@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Mac specfic
+.DS_Store
+*/.DS_Store
+
