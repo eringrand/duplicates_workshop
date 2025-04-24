@@ -1,3 +1,5 @@
+# R specific
+dealing_with_duplicates_in_r.Rproj
 .Rproj.user
 .Rhistory
 .RData
@@ -6,4 +8,3 @@
 # Mac specfic
 .DS_Store
 */.DS_Store
-
